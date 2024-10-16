@@ -22,8 +22,8 @@ target_link_libraries (${PROJECT_NAME} PRIVATE daemon)
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 
 # Install the config file .conf
-install(FILES ${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}.conf DESTINATION /etc/${PROJECT_NAME}/)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/systemd/${PROJECT_NAME}.conf DESTINATION /etc/${PROJECT_NAME}/)
 # Install the systemd file .service
-install(FILES ${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}.service DESTINATION /etc/systemd/system/)
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/systemd/${PROJECT_NAME}.service DESTINATION /etc/systemd/system/)
 # Install the binary program
 install(TARGETS ${PROJECT_NAME} DESTINATION /usr/bin/)

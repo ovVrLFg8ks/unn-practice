@@ -19,3 +19,14 @@ sudo systemctl stop fault
 ```
 sudo systemctl [enable|disable] <daemon>
 ```
+---
+Достойны упоминания:
+```
+tail -f /var/log/syslog
+```
+```
+sudo systemctl --type=service --state=active
+```
+```
+sudo systemctl daemon-reload
+```
