@@ -1,0 +1,1 @@
+/usr/bin/g++ -fPIC -g -shared -Wl,-soname,libdaemon.so.1.0.0 -o libdaemon.so.1.0.0

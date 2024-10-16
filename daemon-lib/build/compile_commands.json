@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/home/user/VScode/daemonLib/build",
+  "command": "/usr/bin/g++  -I/home/user/VScode/daemonLib/include -ggdb -Wall -Wextra -pedantic -O0 -g -o CMakeFiles/daemonpp.dir/daemonpp.cpp.o -c /home/user/VScode/daemonLib/daemonpp.cpp",
+  "file": "/home/user/VScode/daemonLib/daemonpp.cpp",
+  "output": "CMakeFiles/daemonpp.dir/daemonpp.cpp.o"
+}
+]

@@ -1,0 +1,1 @@
+/usr/bin/g++ -ggdb -Wall -Wextra -pedantic -O0 -g CMakeFiles/daemonpp.dir/daemonpp.cpp.o -o daemonpp

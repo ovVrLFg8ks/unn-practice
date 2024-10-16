@@ -1,0 +1,20 @@
+[
+{
+  "directory": "/home/user/VScode/daemon_template/build/configuration",
+  "command": "/usr/bin/g++  -I/home/user/VScode/daemon_template/configuration/include -I/home/user/VScode/daemon_template/daemon-lib/include -g -Wall -o CMakeFiles/configuration.dir/src/configuration.cpp.o -c /home/user/VScode/daemon_template/configuration/src/configuration.cpp",
+  "file": "/home/user/VScode/daemon_template/configuration/src/configuration.cpp",
+  "output": "configuration/CMakeFiles/configuration.dir/src/configuration.cpp.o"
+},
+{
+  "directory": "/home/user/VScode/daemon_template/build/radio",
+  "command": "/usr/bin/g++  -I/home/user/VScode/daemon_template/radio/include -I/home/user/VScode/daemon_template/daemon-lib/include -g -Wall -o CMakeFiles/radio.dir/src/radio.cpp.o -c /home/user/VScode/daemon_template/radio/src/radio.cpp",
+  "file": "/home/user/VScode/daemon_template/radio/src/radio.cpp",
+  "output": "radio/CMakeFiles/radio.dir/src/radio.cpp.o"
+},
+{
+  "directory": "/home/user/VScode/daemon_template/build/fault",
+  "command": "/usr/bin/g++  -I/home/user/VScode/daemon_template/fault/include -I/home/user/VScode/daemon_template/daemon-lib/include -g -Wall -o CMakeFiles/fault.dir/src/fault.cpp.o -c /home/user/VScode/daemon_template/fault/src/fault.cpp",
+  "file": "/home/user/VScode/daemon_template/fault/src/fault.cpp",
+  "output": "fault/CMakeFiles/fault.dir/src/fault.cpp.o"
+}
+]

@@ -1,0 +1,1 @@
+/usr/bin/g++ -g CMakeFiles/fault.dir/src/fault.cpp.o -o fault-1.0.0  -Wl,-rpath,/home/user/VScode/daemon_template/build/daemon-lib: ../daemon-lib/libdaemon.so.1.0.0

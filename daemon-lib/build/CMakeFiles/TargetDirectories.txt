@@ -1,0 +1,7 @@
+/home/user/VScode/daemonLib/build/CMakeFiles/daemon.dir
+/home/user/VScode/daemonLib/build/CMakeFiles/edit_cache.dir
+/home/user/VScode/daemonLib/build/CMakeFiles/rebuild_cache.dir
+/home/user/VScode/daemonLib/build/CMakeFiles/list_install_components.dir
+/home/user/VScode/daemonLib/build/CMakeFiles/install.dir
+/home/user/VScode/daemonLib/build/CMakeFiles/install/local.dir
+/home/user/VScode/daemonLib/build/CMakeFiles/install/strip.dir
