@@ -1,0 +1,2 @@
+/usr/local/lib/libdaemon.so.1.0.0
+/usr/local/lib/libdaemon.so
