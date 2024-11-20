@@ -1,13 +1,27 @@
 #include "daemon.hpp"
+#include "SharedMemory.hpp"
+
+#include <thread>
+
 using namespace daemonpp;
+
+void ServLoop(SharedMemoryServer &server) {
+    server.WorkLoop();  // process client requests
+}
 
 class radio : public daemon
 {
 public:
+    SharedMemoryServer server_RC = SharedMemoryServer(MEMNAME_RC);
+    SharedMemoryServer server_RF = SharedMemoryServer(MEMNAME_RF);
+
+    std::thread serveloop_RC = std::thread(ServLoop, std::ref(server_RC));
+    std::thread serveloop_RF = std::thread(ServLoop, std::ref(server_RF));
+
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
-
+      
       dlog::info("on_start: radio version " + cfg.get("version") + " started!");
     }
 
@@ -23,6 +37,10 @@ public:
       /// Cleanup your code here...
 
       dlog::info("on_stop: radio stopped.");
+      server_RC.Stop();
+      server_RF.Stop();
+      serveloop_RC.join();
+      serveloop_RF.join();
     }
 
     void on_reload(const dconfig& cfg) override {
@@ -40,5 +58,8 @@ int main(int argc, const char* argv[]) {
   dmn.set_update_duration(std::chrono::minutes(1));
   dmn.set_cwd("/");
   dmn.run(argc, argv);
+
+
+
   return 0;
 }

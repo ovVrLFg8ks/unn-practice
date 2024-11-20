@@ -1,9 +1,45 @@
 #include "daemon.hpp"
+#include "SharedMemory.hpp"
+
+#include <thread>
+
 using namespace daemonpp;
+
+class SharedMemoryClient_A : public SharedMemoryClient {
+private:
+  void Ping() {
+      shm.SetState(SM_SERVER);
+      dlog::info(shm.RecieveStreamFromServer());
+  }
+public:
+    void WorkLoop() {
+        working = true;
+        std::string command = "ping";    // user command (ex. "ping")
+        while (working) {
+            if (AwaitLoop() == -1) {
+                dlog::info("NO ANS");
+                usleep(10000*1000);
+                continue;
+            }
+            shm.SetTag(comms[command].first);
+            comms[command].second();
+            usleep(10000*1000);
+        }
+    }
+
+    SharedMemoryClient_A(const char *name) : SharedMemoryClient(name) {}
+};
+
+void ClientLoop(SharedMemoryClient_A &client) {
+    client.WorkLoop();
+}
 
 class fault : public daemon
 {
 public:
+    SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RF);
+    std::thread loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
+
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
@@ -21,6 +57,9 @@ public:
     void on_stop() override {
       /// Runs once before daemon is about to exit.
       /// Cleanup your code here...
+
+      radioSM.Stop();
+      loop_radioSM.join();
 
       dlog::info("on_stop: fault stopped.");
     }
