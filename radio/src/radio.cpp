@@ -1,5 +1,6 @@
 #include "daemon.hpp"
 #include "SharedMemory.hpp"
+#include "Socket_Transport.h"
 
 #include <thread>
 
@@ -18,11 +19,14 @@ public:
     std::thread serveloop_RC = std::thread(ServLoop, std::ref(server_RC));
     std::thread serveloop_RF = std::thread(ServLoop, std::ref(server_RF));
 
+    Transport Transp = Transport();
+
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
       
       dlog::info("on_start: radio version " + cfg.get("version") + " started!");
+      Transp.Run();
     }
 
     void on_update() override {

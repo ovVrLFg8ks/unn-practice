@@ -1,5 +1,6 @@
 #include "daemon.hpp"
 #include "SharedMemory.hpp"
+#include "Socket_Server.h"
 
 #include <thread>
 
@@ -37,14 +38,18 @@ void ClientLoop(SharedMemoryClient_A &client) {
 class configuration : public daemon
 {
 public:
+    Address configSocket = Address(DEFAULT_PORT, DEFAULT_HOST);
+    Server configServer = Server(configSocket);
+
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RC);
     std::thread loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
-
+      
       dlog::info("on_start: configuration version " + cfg.get("version") + " started!");
+      configServer.Run();
     }
 
     void on_update() override {
