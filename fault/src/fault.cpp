@@ -1,5 +1,6 @@
 #include "daemon.hpp"
 #include "SharedMemory.hpp"
+#include "Transport.h"
 
 #include <thread>
 
@@ -40,11 +41,16 @@ public:
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RF);
     std::thread loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
 
+
+    Transport Transp = Transport();
+    
+
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
 
       dlog::info("on_start: fault version " + cfg.get("version") + " started!");
+      Transp.Run();
     }
 
     void on_update() override {
