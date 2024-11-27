@@ -95,7 +95,7 @@ public:
         auto serialized_response = Protocol::Serialize(response);  
         // Send the serialized response back to the client
         new_socket.Send(std::string(serialized_response.begin(), serialized_response.end()));  
-
+      
         dlog::info("Processed command: " + std::to_string(static_cast<int>(request.command)));
 
         close(new_fd);

@@ -30,6 +30,7 @@ public:
       /// Initialize your code here...
       
       dlog::info("on_start: radio version " + cfg.get("version") + " started!");
+      Transp.Run();
     }
 
     void on_update() override {

@@ -53,6 +53,7 @@ public:
       /// Initialize your code here...
 
       dlog::info("on_start: fault version " + cfg.get("version") + " started!");
+      Transp.Run();
     }
 
     void on_update() override {

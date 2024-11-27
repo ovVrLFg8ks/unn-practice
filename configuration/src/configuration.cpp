@@ -52,6 +52,7 @@ public:
       /// Initialize your code here...
       
       dlog::info("on_start: configuration version " + cfg.get("version") + " started!");
+      configServer.Run();
     }
 
     void on_update() override {
