@@ -15,7 +15,7 @@ public:
             std::cin >> command;
 
             if (command == 0) {
-                std::cout << "Exit..." << std::endl;
+                dlog::info("Exit...");
                 // Send EXIT command to the server
                 Protocol::Message exit_msg;
                 exit_msg.command = Protocol::EXIT;  
@@ -32,7 +32,7 @@ public:
                 client.ProcessServerResponse(command, response);
 
             } catch (const std::exception& e) {
-                std::cerr << "Error sending/receiving data: " << e.what() << std::endl;
+                dlog::error("Error sending/receiving data: " + std::string(e.what()));
             }
         }
     }

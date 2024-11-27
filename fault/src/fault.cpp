@@ -34,7 +34,9 @@ public:
 void ClientLoop(SharedMemoryClient_A &client) {
     client.WorkLoop();
 }
-
+void RunClient(Transport& transport_soket) {
+    transport_soket.Run();
+}
 class fault : public daemon
 {
 public:
@@ -43,6 +45,7 @@ public:
 
 
     Transport Transp = Transport();
+    std::thread client_thread = std::thread (RunClient, std::ref(Transp));
     
 
     void on_start(const dconfig& cfg) override {
@@ -66,7 +69,7 @@ public:
 
       radioSM.Stop();
       loop_radioSM.join();
-
+      client_thread.join();
       dlog::info("on_stop: fault stopped.");
     }
 

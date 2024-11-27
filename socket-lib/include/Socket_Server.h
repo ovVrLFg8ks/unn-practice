@@ -84,7 +84,7 @@ public:
                 break;
             }
             case Protocol::EXIT: {
-                std::cout << "Received EXIT command. Shutting down server." << std::endl;
+                dlog::info("Received EXIT command. Shutting down server. \n");
                 exit(0);  
             }
             default:
@@ -95,21 +95,21 @@ public:
         auto serialized_response = Protocol::Serialize(response);  
         // Send the serialized response back to the client
         new_socket.Send(std::string(serialized_response.begin(), serialized_response.end()));  
-
-        std::cout << "Processed command: " << static_cast<int>(request.command) << std::endl;
+      
+        dlog::info("Processed command: " + std::to_string(static_cast<int>(request.command)));
 
         close(new_fd);
     }
 
     void Run() {
     // Enter an infinite loop to continuously accept client connections
-        std::cout << "Server started, waiting for connections..." << std::endl;
+        dlog::info("Server started, waiting for connections... \n");
         while (true) {
             try {
                 // Accept a client connection and process its request
                 Accept_client();
             }catch(const std::exception& e) {
-                std::cerr << "Error during communication: " << e.what() << std::endl;
+                dlog::error("Error during communication: " + std::string(e.what()));
                 break;
             }
         }
