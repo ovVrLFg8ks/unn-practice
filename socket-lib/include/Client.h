@@ -33,25 +33,25 @@ public:
             std::string responseStr(msg.data.begin(), msg.data.end());
             return responseStr;
         } catch (const std::exception& e) {
-            std::cerr << "Error during deserialization: " << e.what() << std::endl;
+            dlog::error("Error during deserialization: " + std::string(e.what()));
             return "";
         }
     }
 
     // Show available commands to the user
     void ShowCommands() const {
-        std::cout << "Choose a command:" << std::endl;
-        std::cout << "1: I'm alive" << std::endl;
-        std::cout << "2: Tell me your status" << std::endl;
-        std::cout << "3: Set frequency (value)" << std::endl;
-        std::cout << "4: Set power (value)" << std::endl;
-        std::cout << "5: Tell me frequency" << std::endl;
-        std::cout << "6: Tell me power" << std::endl;
-        std::cout << "7: Raise emergency (number)" << std::endl;
-        std::cout << "8: Clear emergency (number)" << std::endl;
-        std::cout << "9: Tell me the list of raised emergencies" << std::endl;
-        std::cout << "0: Exit" << std::endl;
-        std::cout << "Enter command: ";
+        dlog::info ("Choose a command: \n")  ;
+        dlog::info ("1: I'm alive \n") ;
+        dlog::info ("2: Tell me your status \n" );
+        dlog::info ("3: Set frequency (value) \n") ;
+        dlog::info ("4: Set power (value) \n") ;
+        dlog::info ("5: Tell me frequency \n" );
+        dlog::info ("6: Tell me power \n") ;
+        dlog::info ("7: Raise emergency (number) \n" );
+        dlog::info ("8: Clear emergency (number) \n" );
+        dlog::info ("9: Tell me the list of raised emergencies \n" );
+        dlog::info ("0: Exit \n" );
+        dlog::info ("Enter command: ");
     }
 
     // Handle user input and prepare the corresponding protocol message for the server.
@@ -65,7 +65,7 @@ public:
                 request.command = Protocol::STATUS;
                 break;
             case 3: { 
-                std::cout << "Enter frequency: ";
+                dlog::info ("Enter frequency: ");
                 std::cin >> frequency;
 
                 request.command = Protocol::SET_FREQUENCY;
@@ -74,7 +74,7 @@ public:
                 break;
             }
             case 4: { 
-                std::cout << "Enter power: ";
+                dlog::info ("Enter power: ");
                 std::cin >> power;
 
                 request.command = Protocol::SET_POWER;
@@ -90,7 +90,7 @@ public:
                 break;
             case 7: { 
                 int emergency;
-                std::cout << "Enter emergency number: ";
+                dlog::info ("Enter emergency number: ");
                 std::cin >> emergency;
                 request.command = Protocol::RAISE_EMERGENCY;
                 request.data.resize(sizeof(int));
@@ -99,7 +99,7 @@ public:
             }
             case 8: { 
                 int emergency;
-                std::cout << "Enter emergency number to clear: ";
+                dlog::info ("Enter emergency number to clear: ");
                 std::cin >> emergency;
                 request.command = Protocol::CLEAR_EMERGENCY;
                 request.data.resize(sizeof(int));
@@ -110,7 +110,7 @@ public:
                 request.command = Protocol::GET_EMERGENCIES;
                 break;
             default:
-                std::cerr << "Invalid command!" << std::endl;
+                dlog::info ("Invalid command! \n" );
                 break ;
         }
         return request;
@@ -121,28 +121,28 @@ public:
         if (command == 5) {  
             float received_frequency;
             std::memcpy(&received_frequency, response.data(), sizeof(float));
-            std::cout << "Server response (Frequency): " << received_frequency << std::endl;
+            dlog::info("Server response (Frequency): " + std::to_string(received_frequency));
         }
         else if (command == 6) {  
             float received_power;
             std::memcpy(&received_power, response.data(), sizeof(float));
-            std::cout << "Server response (Power): " << received_power << std::endl;
+            dlog::info("Server response (Power): " + std::to_string(received_power));
         } 
         else if (command == 9) {  
             if (!response.empty()) {
-                std::cout << "Server response (Emergencies): ";
+                std::string emergencies_str;
                 for (size_t i = 0; i < response.size() / sizeof(int); ++i) {
                     int emergency;
                     std::memcpy(&emergency, &response[i * sizeof(int)], sizeof(int));
-                    std::cout << emergency << " ";
+                    emergencies_str += std::to_string(emergency) + " ";
                 }
-                std::cout << std::endl;
+                dlog::info("Server response (Emergencies): " + emergencies_str);
             } else {
-                std::cout << "No emergencies raised." << std::endl;
+                dlog::info ("No emergencies raised. \n" );
             }
         } 
         else {
-            std::cout << "Server response: " << response << std::endl;
+            dlog::info("Server response: " + response);
         }
     }
 

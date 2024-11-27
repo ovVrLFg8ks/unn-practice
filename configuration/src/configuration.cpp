@@ -34,12 +34,15 @@ public:
 void ClientLoop(SharedMemoryClient_A &client) {
     client.WorkLoop();
 }
-
+void HandleClientConnection(Server &server_soket) {
+    server_soket.Run();
+}
 class configuration : public daemon
 {
 public:
-    Address configSocket = Address(DEFAULT_PORT, DEFAULT_HOST);
-    Server configServer = Server(configSocket);
+    Address configSocketAddr = Address(DEFAULT_PORT, DEFAULT_HOST);
+    Server configServer = Server(configSocketAddr);
+    std::thread server_thread = std::thread(HandleClientConnection, std::ref(configServer));
 
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RC);
     std::thread loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
@@ -49,7 +52,6 @@ public:
       /// Initialize your code here...
       
       dlog::info("on_start: configuration version " + cfg.get("version") + " started!");
-      configServer.Run();
     }
 
     void on_update() override {
@@ -65,6 +67,7 @@ public:
 
       radioSM.Stop();
       loop_radioSM.join();
+      server_thread.join();
 
       dlog::info("on_stop: configuration stopped.");
     }

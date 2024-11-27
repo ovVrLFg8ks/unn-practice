@@ -9,6 +9,9 @@ using namespace daemonpp;
 void ServLoop(SharedMemoryServer &server) {
     server.WorkLoop();  // process client requests
 }
+void RunClient(Transport& transport_soket) {
+    transport_soket.Run();
+}
 
 class radio : public daemon
 {
@@ -20,13 +23,13 @@ public:
     std::thread serveloop_RF = std::thread(ServLoop, std::ref(server_RF));
 
     Transport Transp = Transport();
+    std::thread client_thread = std::thread (RunClient, std::ref(Transp));
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
       
       dlog::info("on_start: radio version " + cfg.get("version") + " started!");
-      Transp.Run();
     }
 
     void on_update() override {
@@ -45,6 +48,7 @@ public:
       server_RF.Stop();
       serveloop_RC.join();
       serveloop_RF.join();
+      client_thread.join();
     }
 
     void on_reload(const dconfig& cfg) override {
