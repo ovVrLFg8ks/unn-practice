@@ -14,6 +14,7 @@ public:
 
 private:
     NamedPipeTransport transport_;
+    
     uint8_t frequency_;
     uint8_t power_;
     std::set<uint8_t> alarms_;
