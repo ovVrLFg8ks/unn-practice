@@ -1,6 +1,6 @@
 #include "daemon.hpp"
 #include "SharedMemory.hpp"
-#include "Socket_Server.h"
+//#include "Socket_Server.h"
 
 #include <thread>
 
@@ -14,45 +14,43 @@ private:
   }
 public:
     void WorkLoop() {
+        dlog::info("WorkLoop");
         working = true;
         std::string command = "ping";    // user command (ex. "ping")
         while (working) {
+            dlog::info("Work!");
             if (AwaitLoop() == -1) {
                 dlog::info("NO ANS");
-                usleep(10000*1000);
+                usleep(1000*1000);
                 continue;
             }
             shm.SetTag(comms[command].first);
             comms[command].second();
             usleep(10000*1000);
         }
+        dlog::info("workExit");
     }
 
     SharedMemoryClient_A(const char *name) : SharedMemoryClient(name) {}
 };
 
 void ClientLoop(SharedMemoryClient_A &client) {
+    dlog::info("ClientLoop");
     client.WorkLoop();
+    dlog::info("ClientLoopExit");
 }
-void HandleClientConnection(Server &server_soket) {
-    server_soket.Run();
-}
-class configuration : public daemon
-{
-public:
-    Address configSocketAddr = Address(DEFAULT_PORT, DEFAULT_HOST);
-    Server configServer = Server(configSocketAddr);
-    std::thread server_thread = std::thread(HandleClientConnection, std::ref(configServer));
 
+class configuration : public daemon {
+public:
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RC);
-    std::thread loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
+    std::thread loop_radioSM;
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
       
       dlog::info("on_start: configuration version " + cfg.get("version") + " started!");
-      configServer.Run();
+      loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
     }
 
     void on_update() override {
@@ -68,7 +66,6 @@ public:
 
       radioSM.Stop();
       loop_radioSM.join();
-      server_thread.join();
 
       dlog::info("on_stop: configuration stopped.");
     }

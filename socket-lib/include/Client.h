@@ -1,8 +1,13 @@
 #pragma once
 #include "Socket.h"
 #include "Protocol.h"
+#include "dlog.hpp"
 #include <vector>
 #include <string>
+
+
+using namespace daemonpp;
+
 
 class Client {
 public:
@@ -10,7 +15,6 @@ public:
         socket.Connect(address);
     }
 
-    
     void SendRequest(Protocol::Command cmd, const std::vector<uint8_t>& data = {}) {
         // Create a message containing the command and the data to be sent
         Protocol::Message msg{cmd, data};               

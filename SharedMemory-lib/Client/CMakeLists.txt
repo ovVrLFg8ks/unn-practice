@@ -17,3 +17,5 @@ target_link_libraries (${PROJECT_NAME} PUBLIC transport.shrmem-Core)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CLIENT_INCLUDE_DIR})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
+
+install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})

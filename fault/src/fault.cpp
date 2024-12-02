@@ -1,6 +1,6 @@
 #include "daemon.hpp"
 #include "SharedMemory.hpp"
-#include "Socket_Transport.h"
+//#include "Socket_Transport.h"
 
 #include <thread>
 
@@ -34,18 +34,16 @@ public:
 void ClientLoop(SharedMemoryClient_A &client) {
     client.WorkLoop();
 }
-void RunClient(Transport& transport_soket) {
-    transport_soket.Run();
-}
+
 class fault : public daemon
 {
 public:
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RF);
-    std::thread loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
+    std::thread loop_radioSM;
 
 
-    Transport Transp = Transport();
-    std::thread client_thread = std::thread (RunClient, std::ref(Transp));
+    //Transport Transp = Transport();
+    //std::thread client_thread = std::thread(RunClient, std::ref(Transp));
     
 
     void on_start(const dconfig& cfg) override {
@@ -53,7 +51,8 @@ public:
       /// Initialize your code here...
 
       dlog::info("on_start: fault version " + cfg.get("version") + " started!");
-      Transp.Run();
+      //Transp.Run();
+      loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
     }
 
     void on_update() override {
@@ -69,7 +68,7 @@ public:
 
       radioSM.Stop();
       loop_radioSM.join();
-      client_thread.join();
+      //client_thread.join();
       dlog::info("on_stop: fault stopped.");
     }
 

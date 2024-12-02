@@ -72,11 +72,11 @@ protected:
 
 public:
     SharedMemoryServer(const char *name) : shm(SharedMemory(name)) {
-        shm.SetState(SM_CLIENT);            // pass control to client
+        //shm.SetState(SM_CLIENT);            // pass control to client
     }
 
     // processes client requests
     void WorkLoop();
 
-    void Stop() { working = false; }
+    void Stop() { working = false; shm.SetState(SM_SERVER); }
 };

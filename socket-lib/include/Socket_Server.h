@@ -1,6 +1,7 @@
 #pragma once
 #include "Socket.h"
 #include "Protocol.h"
+#include "dlog.hpp"
 #include <iostream>
 #include <algorithm>
 #include <vector>
@@ -84,7 +85,7 @@ public:
                 break;
             }
             case Protocol::EXIT: {
-                dlog::info("Received EXIT command. Shutting down server. \n");
+                daemonpp::dlog::info("Received EXIT command. Shutting down server. \n");
                 exit(0);  
             }
             default:
@@ -96,20 +97,20 @@ public:
         // Send the serialized response back to the client
         new_socket.Send(std::string(serialized_response.begin(), serialized_response.end()));  
       
-        dlog::info("Processed command: " + std::to_string(static_cast<int>(request.command)));
+        daemonpp::dlog::info("Processed command: " + std::to_string(static_cast<int>(request.command)));
 
         close(new_fd);
     }
 
     void Run() {
     // Enter an infinite loop to continuously accept client connections
-        dlog::info("Server started, waiting for connections... \n");
+        daemonpp::dlog::info("Server started, waiting for connections... \n");
         while (true) {
             try {
                 // Accept a client connection and process its request
                 Accept_client();
             }catch(const std::exception& e) {
-                dlog::error("Error during communication: " + std::string(e.what()));
+                daemonpp::dlog::error("Error during communication: " + std::string(e.what()));
                 break;
             }
         }
