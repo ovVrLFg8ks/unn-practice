@@ -11,8 +11,8 @@ add_library(${PROJECT_NAME} SHARED ${CMAKE_CURRENT_SOURCE_DIR}/Server/include/Se
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_20)
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
 
-target_link_libraries(${PROJECT_NAME} INTERFACE transport.shrmem-Server)
-target_link_libraries(${PROJECT_NAME} INTERFACE transport.shrmem-Client)
+target_link_libraries(${PROJECT_NAME} PUBLIC transport.shrmem-Server)
+target_link_libraries(${PROJECT_NAME} PUBLIC transport.shrmem-Client)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Core/include)
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 

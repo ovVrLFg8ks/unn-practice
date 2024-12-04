@@ -9,7 +9,7 @@ ExecStart=/usr/bin/configuration --config /etc/daemons/configuration.conf
 ExecReload=/bin/kill -s SIGHUP $MAINPID
 ExecStop=/bin/kill -s SIGTERM $MAINPID
 User=root
-StandardError=syslog
+#StandardError=syslog
 SyslogIdentifier=configuration
 
 [Install]
