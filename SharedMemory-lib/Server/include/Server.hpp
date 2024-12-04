@@ -32,25 +32,25 @@ protected:
     SharedMemory shm;
 
 public:
-    void Ping();            // answer client
+    virtual void Ping();            // answer client
 
-    void Exit();            // exit WorkLoop()
+    virtual void Exit();            // exit WorkLoop()
 
-    void Status();          // give client server/equipment status
+    virtual void Status();          // give client server/equipment status
 
-    void SetFrequency();    // set frequency by client
+    virtual void SetFrequency();    // set frequency by client
 
-    void SetPower();        // set power by client
+    virtual void SetPower();        // set power by client
 
-    void GetFrequency();    // client gets frequency
+    virtual void GetFrequency();    // client gets frequency
 
-    void GetPower();        // client gets power
+    virtual void GetPower();        // client gets power
 
-    void SetFault();        // client sets fault
+    virtual void SetFault();        // client sets fault
 
-    void ClearFault();      // client clears fault
+    virtual void ClearFault();      // client clears fault
 
-    void ListFaults();      // send faults table to client
+    virtual void ListFaults();      // send faults table to client
 
 protected:
     void RecvStr();         // test 

@@ -19,25 +19,25 @@ protected:
     int AwaitLoop();
 
 public:
-    void Ping();            // ping server
+    virtual void Ping();            // ping server
 
-    void Exit();            // server and client shutdown
+    virtual void Exit();            // server and client shutdown
 
-    void Status();          // check server status
+    virtual void Status();          // check server status
 
-    void SetFrequency();    
+    virtual void SetFrequency();    
 
-    void SetPower();
+    virtual void SetPower();
 
-    void GetFrequency();
+    virtual void GetFrequency();
 
-    void GetPower();
+    virtual void GetPower();
 
-    void SetFault();
+    virtual void SetFault();
 
-    void ClearFault();
+    virtual void ClearFault();
 
-    void ListFault();       // recieve and print table of faults
+    virtual void ListFault();       // recieve and print table of faults
 
 protected:
     void SendStr();         // send stream to server

@@ -14,11 +14,9 @@ private:
   }
 public:
     void WorkLoop() {
-        dlog::info("WorkLoop");
         working = true;
         std::string command = "ping";    // user command (ex. "ping")
         while (working) {
-            dlog::info("Work!");
             if (AwaitLoop() == -1) {
                 dlog::info("NO ANS");
                 usleep(1000*1000);
@@ -28,16 +26,13 @@ public:
             comms[command].second();
             usleep(10000*1000);
         }
-        dlog::info("workExit");
     }
 
     SharedMemoryClient_A(const char *name) : SharedMemoryClient(name) {}
 };
 
 void ClientLoop(SharedMemoryClient_A &client) {
-    dlog::info("ClientLoop");
     client.WorkLoop();
-    dlog::info("ClientLoopExit");
 }
 
 class configuration : public daemon {
@@ -50,6 +45,7 @@ public:
       /// Initialize your code here...
       
       dlog::info("on_start: configuration version " + cfg.get("version") + " started!");
+      
       loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
     }
 

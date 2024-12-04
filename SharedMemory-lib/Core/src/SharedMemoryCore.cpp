@@ -70,7 +70,7 @@ std::string SharedMemory::RecieveStreamCore(bool reciever) {
         while (shmp->state != reciever) {
             usleep(sleepDurationMs * 1000);
             if (i++ > awaitIter) {
-                shmp->state = reciever;
+                //shmp->state = reciever;
                 str = "NO ANSWER";
                 return str;
             }

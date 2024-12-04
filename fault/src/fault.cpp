@@ -19,7 +19,7 @@ public:
         while (working) {
             if (AwaitLoop() == -1) {
                 dlog::info("NO ANS");
-                usleep(10000*1000);
+                usleep(1000*1000);
                 continue;
             }
             shm.SetTag(comms[command].first);
@@ -35,8 +35,7 @@ void ClientLoop(SharedMemoryClient_A &client) {
     client.WorkLoop();
 }
 
-class fault : public daemon
-{
+class fault : public daemon {
 public:
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RF);
     std::thread loop_radioSM;
@@ -83,7 +82,7 @@ public:
 
 int main(int argc, const char* argv[]) {
   fault dmn;
-  dmn.set_name("configuration");
+  dmn.set_name("fault");
   dmn.set_update_duration(std::chrono::minutes(1));
   dmn.set_cwd("/");
   dmn.run(argc, argv);

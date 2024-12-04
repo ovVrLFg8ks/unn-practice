@@ -1,8 +1,8 @@
 #pragma once
 
 // shared memory unique name 
-const char MEMNAME_RC[24] = "/6y8xOGvSmo-WtV_XO16eJA";  // radio-config connection
-const char MEMNAME_RF[24] = "/7y9xOGvSmo-WtV_XO16eJB";  // radio-fault connection
+const char MEMNAME_RC[24] = "/6y8xOGvSmo-WtV_XO16eRC";  // radio-config connection
+const char MEMNAME_RF[24] = "/7y9xOGvSmo-WtV_XO16eRF";  // radio-fault connection
 
 
 // who owns memory

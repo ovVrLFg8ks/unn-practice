@@ -12,11 +12,10 @@ private:
   void Ping() {
     dlog::info("ping-pong");
     shm.SendStreamToClient((char*)"pong");
-}
+  }
 public:
   void WorkLoop() {
       working = true;
-      dlog::info("WorkLoop");
       shm.SetState(SM_CLIENT);   
       while (working) {
           if (shm.GetState() == SM_SERVER) {
@@ -39,19 +38,15 @@ public:
 void ServLoop(SharedMemoryServer_A &server) {
     server.WorkLoop();  // process client requests
 }
-/*
-void RunClient(Transport& transport_soket) {
-    transport_soket.Run();
-}
-*/
+
 class radio : public daemon
 {
 public:
     SharedMemoryServer_A server_RC = SharedMemoryServer_A(MEMNAME_RC);
-    //SharedMemoryServer_A server_RF = SharedMemoryServer_A(MEMNAME_RF);
+    SharedMemoryServer_A server_RF = SharedMemoryServer_A(MEMNAME_RF);
 
     std::thread serveloop_RC;
-    //std::thread serveloop_RF;
+    std::thread serveloop_RF;
 
     //Transport Transp = Transport();
     //std::thread client_thread = std::thread (RunClient, std::ref(Transp));
@@ -63,7 +58,7 @@ public:
       dlog::info("on_start: radio version " + cfg.get("version") + " started!");
       //Transp.Run();
       serveloop_RC = std::thread(ServLoop, std::ref(server_RC));
-      //serveloop_RF = std::thread(ServLoop, std::ref(server_RF));
+      serveloop_RF = std::thread(ServLoop, std::ref(server_RF));
     }
 
     void on_update() override {
@@ -79,9 +74,9 @@ public:
 
       dlog::info("on_stop: radio stopped.");
       server_RC.Stop();
-      //server_RF.Stop();
+      server_RF.Stop();
       serveloop_RC.join();
-      //serveloop_RF.join();
+      serveloop_RF.join();
       //client_thread.join();
     }
 
