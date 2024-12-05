@@ -3,13 +3,15 @@
 #include <string>
 
 class Transport{
-
+private:
+    bool working = true; 
 public:
 
     Transport() : address(DEFAULT_PORT, DEFAULT_HOST) {}
+    void Stop_Socket() { working = false; }
     void Run(){
-        
-        while (true) {
+        working = true;
+        while (working) {
             Client client(address);                 // Client object responsible for network communication
             client.ShowCommands();          // Show all available commands
             std::cin >> command;

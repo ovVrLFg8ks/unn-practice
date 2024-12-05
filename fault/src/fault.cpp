@@ -68,6 +68,7 @@ public:
       /// Cleanup your code here...
 
       radioSM.Stop();
+      Transp.Stop_Socket();
       loop_radioSM.join();
       client_thread.join();
       dlog::info("on_stop: fault stopped.");
