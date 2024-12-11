@@ -38,8 +38,8 @@ void ClientLoop(SharedMemoryClient_A &client) {
 void RunClient(Transport& transport_soket) {
     transport_soket.Run();
 }
-void RunNamedPipeServer(NamedPipe::Server &server) {
-    client.Run();
+void RunNamedPipeServer(ServerApp &server) {
+    server.run();
 }
 class fault : public daemon
 {
@@ -52,17 +52,19 @@ public:
     std::thread client_thread = std::thread (RunClient, std::ref(Transp));
     
     
-    pipeServer.Initialize("/tmp/named_pipe_fault");
-    NamedPipeTransport pipeTransport = NamedPipeTransport();
-    std::thread namedPipeThread = std::thread(RunNamedPipeServer, std::ref(pipeTransport));
+    ServerApp server = ServerApp("/tmp/fifo_request", "/tmp/fifo_response");
+    std::thread server_thread;
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
 
+      server_thread = std::thread([this]() {
+          RunNamedPipeServer();
+      });
+
       dlog::info("on_start: fault version " + cfg.get("version") + " started!");
       Transp.Run();
-      pipeTransport.Initialize("/tmp/named_pipe_transport");
     }
 
     void on_update() override {
@@ -78,10 +80,12 @@ public:
 
       radioSM.Stop();
       Transp.Stop_Socket();
-      PipeTransport.Stop();
+      loop_radioSM.join();
+      if (server_thread.joinable()) {
+          server_thread.join();
+      }
       loop_radioSM.join();
       client_thread.join();
-      namedPipeThread.join();
       
       dlog::info("on_stop: fault stopped.");
     }
