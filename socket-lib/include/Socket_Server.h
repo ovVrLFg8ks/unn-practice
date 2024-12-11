@@ -104,8 +104,9 @@ public:
 
     void Run() {
         working = true;
-    // Enter an infinite loop to continuously accept client connections
+        // Enter an infinite loop to continuously accept client connections
         daemonpp::dlog::info("Server started, waiting for connections... \n");
+      
         while (working) {
             try {
                 // Accept a client connection and process its request
@@ -122,6 +123,6 @@ private:
     Socket socket;  // The server's listening socket
     float current_frequency = 50.0f;  // The current frequency value (default 50.0)
     float current_power = 100.0f;     // The current power value (default 100.0)
-    std::vector<int> emergencies;     // A list to track raised emergencies   
-    bool working = true; 
+    std::vector<int> emergencies;     // A list to track raised emergencies  
+    bool working = true;  
 };

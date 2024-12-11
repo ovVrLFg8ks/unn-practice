@@ -72,6 +72,7 @@ public:
       /// Cleanup your code here...
 
       radioSM.Stop();
+      Transp.Stop_Socket();
       loop_radioSM.join();
       
       Transp.Stop_Socket();
