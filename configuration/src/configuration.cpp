@@ -1,6 +1,7 @@
 #include "daemon.hpp"
 #include "SharedMemory.hpp"
 #include "Socket_Server.h"
+#include "NamedPipeLibrary.hpp"
 
 #include <thread>
 
@@ -37,6 +38,9 @@ void ClientLoop(SharedMemoryClient_A &client) {
 void HandleClientConnection(Server &server_soket) {
     server_soket.Run();
 }
+void RunNamedPipeClient(NamedPipe::Client &client) {
+    client.Run();
+}
 class configuration : public daemon
 {
 public:
@@ -46,6 +50,10 @@ public:
 
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RC);
     std::thread loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
+
+    pipeClient.Initialize("/tmp/named_pipe_fault");
+    NamedPipeTransport pipeTransport = NamedPipeTransport();
+    std::thread namedPipeThread = std::thread(RunNamedPipeClient, std::ref(pipeTransport));
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
@@ -69,6 +77,8 @@ public:
       radioSM.Stop();
       loop_radioSM.join();
       server_thread.join();
+      pipeClient.Stop();
+      pipeClientThread.join();
 
       dlog::info("on_stop: configuration stopped.");
     }

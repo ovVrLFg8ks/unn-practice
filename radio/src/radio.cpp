@@ -1,6 +1,7 @@
 #include "daemon.hpp"
 #include "SharedMemory.hpp"
 #include "Socket_Transport.h"
+#include "NamedPipeLibrary.hpp"
 
 #include <thread>
 
@@ -24,6 +25,10 @@ public:
 
     Transport Transp = Transport();
     std::thread client_thread = std::thread (RunClient, std::ref(Transp));
+    
+    pipeClient.Initialize("/tmp/named_pipe_fault");
+    NamedPipeTransport pipeTransport = NamedPipeTransport();
+    std::thread namedPipeThread = std::thread(RunNamedPipeClient, std::ref(pipeTransport));
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
@@ -50,6 +55,8 @@ public:
       serveloop_RC.join();
       serveloop_RF.join();
       client_thread.join();
+      namedPipeThread.join();
+      
     }
 
     void on_reload(const dconfig& cfg) override {

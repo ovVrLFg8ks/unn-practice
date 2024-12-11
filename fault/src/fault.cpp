@@ -1,6 +1,7 @@
 #include "daemon.hpp"
 #include "SharedMemory.hpp"
 #include "Socket_Transport.h"
+#include "NamedPipeLibrary.hpp"
 
 #include <thread>
 
@@ -37,6 +38,9 @@ void ClientLoop(SharedMemoryClient_A &client) {
 void RunClient(Transport& transport_soket) {
     transport_soket.Run();
 }
+void RunNamedPipeServer(NamedPipe::Server &server) {
+    client.Run();
+}
 class fault : public daemon
 {
 public:
@@ -47,6 +51,10 @@ public:
     Transport Transp = Transport();
     std::thread client_thread = std::thread (RunClient, std::ref(Transp));
     
+    
+    pipeServer.Initialize("/tmp/named_pipe_fault");
+    NamedPipeTransport pipeTransport = NamedPipeTransport();
+    std::thread namedPipeThread = std::thread(RunNamedPipeServer, std::ref(pipeTransport));
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
@@ -54,6 +62,7 @@ public:
 
       dlog::info("on_start: fault version " + cfg.get("version") + " started!");
       Transp.Run();
+      pipeTransport.Initialize("/tmp/named_pipe_transport");
     }
 
     void on_update() override {
@@ -68,8 +77,13 @@ public:
       /// Cleanup your code here...
 
       radioSM.Stop();
+      socketTransport.Stop_Socket();
+      PipeTransport.Stop();
+
       loop_radioSM.join();
-      client_thread.join();
+      SocketThread.join();
+      namedPipeThread.join();
+      
       dlog::info("on_stop: fault stopped.");
     }
 
