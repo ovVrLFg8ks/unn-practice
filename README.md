@@ -5,19 +5,10 @@ sudo make install
 ```
 Запускаются по отдельности:
 ```
-sudo systemctl start configuration
 sudo systemctl start radio
+sudo systemctl start configuration
 sudo systemctl start fault
 ```
-(do not use for now)
-```
-sudo systemctl start configuration && sudo systemctl start radio && sudo systemctl start fault
-```
-(and this too)
-```
-sudo systemctl start configuration && sleep 1 && sudo systemctl start radio && sleep 1 && sudo systemctl start fault
-```
-
 ```
 sudo systemctl start radio && sudo systemctl start configuration && sudo systemctl start fault
 ```

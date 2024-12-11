@@ -1,6 +1,6 @@
 #include "daemon.hpp"
 #include "SharedMemory.hpp"
-//#include "Socket_Server.h"
+#include "Socket_Server.h"
 
 #include <thread>
 
@@ -34,9 +34,16 @@ public:
 void ClientLoop(SharedMemoryClient_A &client) {
     client.WorkLoop();
 }
+void HandleClientConnection(Server &server_soket) {
+    server_soket.Run();
+}
 
 class configuration : public daemon {
 public:
+    Address configSocketAddr = Address(DEFAULT_PORT, DEFAULT_HOST);
+    Server configServer = Server(configSocketAddr);
+    std::thread server_thread;
+
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RC);
     std::thread loop_radioSM;
 
@@ -45,6 +52,9 @@ public:
       /// Initialize your code here...
       
       dlog::info("on_start: configuration version " + cfg.get("version") + " started!");
+
+      server_thread = std::thread(HandleClientConnection, std::ref(configServer));
+      configServer.Run();
       
       loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
     }
@@ -62,6 +72,8 @@ public:
 
       radioSM.Stop();
       loop_radioSM.join();
+      configServer.Stop_Socket();
+      server_thread.join();
 
       dlog::info("on_stop: configuration stopped.");
     }

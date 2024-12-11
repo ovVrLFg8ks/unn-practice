@@ -1,6 +1,6 @@
 #include "daemon.hpp"
 #include "SharedMemory.hpp"
-//#include "Socket_Transport.h"
+#include "Socket_Transport.h"
 
 #include <thread>
 #include <string>
@@ -38,6 +38,9 @@ public:
 void ServLoop(SharedMemoryServer_A &server) {
     server.WorkLoop();  // process client requests
 }
+void RunClient(Transport& transport_soket) {
+    transport_soket.Run();
+}
 
 class radio : public daemon
 {
@@ -48,15 +51,18 @@ public:
     std::thread serveloop_RC;
     std::thread serveloop_RF;
 
-    //Transport Transp = Transport();
-    //std::thread client_thread = std::thread (RunClient, std::ref(Transp));
+    Transport Transp = Transport();
+    std::thread client_thread;
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
       
       dlog::info("on_start: radio version " + cfg.get("version") + " started!");
-      //Transp.Run();
+
+      client_thread = std::thread (RunClient, std::ref(Transp));
+      Transp.Run();
+
       serveloop_RC = std::thread(ServLoop, std::ref(server_RC));
       serveloop_RF = std::thread(ServLoop, std::ref(server_RF));
     }
@@ -77,7 +83,9 @@ public:
       server_RF.Stop();
       serveloop_RC.join();
       serveloop_RF.join();
-      //client_thread.join();
+
+      Transp.Stop_Socket();
+      client_thread.join();
     }
 
     void on_reload(const dconfig& cfg) override {
@@ -95,8 +103,5 @@ int main(int argc, const char* argv[]) {
   dmn.set_update_duration(std::chrono::minutes(1));
   dmn.set_cwd("/");
   dmn.run(argc, argv);
-
-
-
   return 0;
 }
