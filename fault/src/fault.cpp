@@ -77,6 +77,7 @@ public:
       /// Cleanup your code here...
 
       radioSM.Stop();
+      Transp.Stop_Socket();
       PipeTransport.Stop();
       loop_radioSM.join();
       client_thread.join();
