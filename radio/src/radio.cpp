@@ -42,7 +42,9 @@ void ServLoop(SharedMemoryServer_A &server) {
 void RunClient(Transport& transport_soket) {
     transport_soket.Run();
 }
-
+void RunClientApp(ClientApp& client_app) {
+    client_app.run();
+}
 class radio : public daemon
 {
 public:
@@ -56,9 +58,9 @@ public:
 
     std::thread client_thread;
     
-    pipeClient.Initialize("/tmp/named_pipe_fault");
-    NamedPipeTransport pipeTransport = NamedPipeTransport();
-    std::thread namedPipeThread;
+
+    ClientApp clientApp = ClientApp("/tmp/fifo_request", "/tmp/fifo_response");
+    std::thread clientAppThread = std::thread(RunClientApp, std::ref(clientApp));
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
@@ -66,7 +68,7 @@ public:
       
       dlog::info("on_start: radio version " + cfg.get("version") + " started!");
 
-      client_thread = std::thread (RunClient, std::ref(Transp));
+      clientApp.run();
       Transp.Run();
       
       namedPipeThread = std::thread(RunNamedPipeClient, std::ref(pipeTransport));
@@ -95,9 +97,8 @@ public:
 
       Transp.Stop_Socket();
       client_thread.join();
-      
-      namedPipeThread.join();
-      
+
+      clientAppThread.join();
     }
 
     void on_reload(const dconfig& cfg) override {

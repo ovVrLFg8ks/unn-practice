@@ -38,10 +38,10 @@ void ClientLoop(SharedMemoryClient_A &client) {
 void HandleClientConnection(Server &server_soket) {
     server_soket.Run();
 }
-
-void RunNamedPipeClient(NamedPipe::Client &client) {
-    client.Run();
+void RunClientApp(ClientApp &client_app) {
+    client_app.run();
 }
+
 class configuration : public daemon {
 public:
     Address configSocketAddr = Address(DEFAULT_PORT, DEFAULT_HOST);
@@ -51,9 +51,8 @@ public:
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RC);
     std::thread loop_radioSM;
 
-    pipeClient.Initialize("/tmp/named_pipe_fault");
-    NamedPipeTransport pipeTransport = NamedPipeTransport();
-    std::thread namedPipeThread;
+    ClientApp clientApp = ClientApp("/tmp/fifo_request", "/tmp/fifo_response");
+    std::thread clientAppThread = std::thread(RunClientApp, std::ref(clientApp));
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
@@ -64,9 +63,7 @@ public:
       server_thread = std::thread(HandleClientConnection, std::ref(configServer));
       configServer.Run();
       
-      namedPipeThread = std::thread(RunNamedPipeClient, std::ref(pipeTransport));
-      
-      loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
+      clientApp.run();
     }
 
     void on_update() override {
@@ -86,8 +83,7 @@ public:
       configServer.Stop_Socket();
       server_thread.join();
       
-      pipeClient.Stop();
-      pipeClientThread.join();
+      clientAppThread.join();
 
       dlog::info("on_stop: configuration stopped.");
     }
