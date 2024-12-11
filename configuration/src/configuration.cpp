@@ -38,8 +38,8 @@ void ClientLoop(SharedMemoryClient_A &client) {
 void HandleClientConnection(Server &server_soket) {
     server_soket.Run();
 }
-void RunNamedPipeClient(NamedPipe::Client &client) {
-    client.Run();
+void RunClientApp(ClientApp &client_app) {
+    client_app.run();
 }
 class configuration : public daemon
 {
@@ -51,9 +51,8 @@ public:
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RC);
     std::thread loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
 
-    pipeClient.Initialize("/tmp/named_pipe_fault");
-    NamedPipeTransport pipeTransport = NamedPipeTransport();
-    std::thread namedPipeThread = std::thread(RunNamedPipeClient, std::ref(pipeTransport));
+    ClientApp clientApp = ClientApp("/tmp/fifo_request", "/tmp/fifo_response");
+    std::thread clientAppThread = std::thread(RunClientApp, std::ref(clientApp));
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
@@ -61,6 +60,7 @@ public:
       
       dlog::info("on_start: configuration version " + cfg.get("version") + " started!");
       configServer.Run();
+      clientApp.run();
     }
 
     void on_update() override {
@@ -77,8 +77,7 @@ public:
       radioSM.Stop();
       loop_radioSM.join();
       server_thread.join();
-      pipeClient.Stop();
-      pipeClientThread.join();
+      clientAppThread.join();
 
       dlog::info("on_stop: configuration stopped.");
     }
