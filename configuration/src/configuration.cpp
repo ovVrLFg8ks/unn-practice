@@ -19,7 +19,7 @@ public:
         while (working) {
             if (AwaitLoop() == -1) {
                 dlog::info("NO ANS");
-                usleep(10000*1000);
+                usleep(1000*1000);
                 continue;
             }
             shm.SetTag(comms[command].first);
@@ -37,22 +37,26 @@ void ClientLoop(SharedMemoryClient_A &client) {
 void HandleClientConnection(Server &server_soket) {
     server_soket.Run();
 }
-class configuration : public daemon
-{
+
+class configuration : public daemon {
 public:
     Address configSocketAddr = Address(DEFAULT_PORT, DEFAULT_HOST);
     Server configServer = Server(configSocketAddr);
-    std::thread server_thread = std::thread(HandleClientConnection, std::ref(configServer));
+    std::thread server_thread;
 
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RC);
-    std::thread loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
+    std::thread loop_radioSM;
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
       
       dlog::info("on_start: configuration version " + cfg.get("version") + " started!");
+
+      server_thread = std::thread(HandleClientConnection, std::ref(configServer));
       configServer.Run();
+      
+      loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
     }
 
     void on_update() override {
@@ -65,10 +69,12 @@ public:
     void on_stop() override {
       /// Runs once before daemon is about to exit.
       /// Cleanup your code here...
-      configServer.Stop_Socket();
+      
       radioSM.Stop();
-      server_thread.join();
       loop_radioSM.join();
+      
+      configServer.Stop_Socket();
+      server_thread.join();
 
       dlog::info("on_stop: configuration stopped.");
     }

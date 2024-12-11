@@ -3,10 +3,39 @@
 #include "Socket_Transport.h"
 
 #include <thread>
+#include <string>
 
 using namespace daemonpp;
 
-void ServLoop(SharedMemoryServer &server) {
+class SharedMemoryServer_A : public SharedMemoryServer {
+private:
+  void Ping() {
+    dlog::info("ping-pong");
+    shm.SendStreamToClient((char*)"pong");
+  }
+public:
+  void WorkLoop() {
+      working = true;
+      shm.SetState(SM_CLIENT);   
+      while (working) {
+          if (shm.GetState() == SM_SERVER) {
+              if (comms.count(shm.GetTag()) > 0)
+                  comms[shm.GetTag()]();
+              else {
+                  std::cout << "bad tag" << std::endl;
+                  shm.SetState(SM_CLIENT);
+              }
+          }
+          usleep(sleepMs * 1000);
+      }
+  }
+  
+  SharedMemoryServer_A(const char *name) : SharedMemoryServer(name) {
+    dlog::info("started " + (std::string)shm.GetMemname() + " with err code " + std::to_string(shm.err));
+  }
+};
+
+void ServLoop(SharedMemoryServer_A &server) {
     server.WorkLoop();  // process client requests
 }
 void RunClient(Transport& transport_soket) {
@@ -16,21 +45,26 @@ void RunClient(Transport& transport_soket) {
 class radio : public daemon
 {
 public:
-    SharedMemoryServer server_RC = SharedMemoryServer(MEMNAME_RC);
-    SharedMemoryServer server_RF = SharedMemoryServer(MEMNAME_RF);
+    SharedMemoryServer_A server_RC = SharedMemoryServer_A(MEMNAME_RC);
+    SharedMemoryServer_A server_RF = SharedMemoryServer_A(MEMNAME_RF);
 
-    std::thread serveloop_RC = std::thread(ServLoop, std::ref(server_RC));
-    std::thread serveloop_RF = std::thread(ServLoop, std::ref(server_RF));
+    std::thread serveloop_RC;
+    std::thread serveloop_RF;
 
     Transport Transp = Transport();
-    std::thread client_thread = std::thread (RunClient, std::ref(Transp));
+    std::thread client_thread;
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
       
       dlog::info("on_start: radio version " + cfg.get("version") + " started!");
+
+      client_thread = std::thread (RunClient, std::ref(Transp));
       Transp.Run();
+
+      serveloop_RC = std::thread(ServLoop, std::ref(server_RC));
+      serveloop_RF = std::thread(ServLoop, std::ref(server_RF));
     }
 
     void on_update() override {
@@ -50,6 +84,8 @@ public:
       Transp.Stop_Socket();
       serveloop_RC.join();
       serveloop_RF.join();
+
+      Transp.Stop_Socket();
       client_thread.join();
     }
 
@@ -68,8 +104,5 @@ int main(int argc, const char* argv[]) {
   dmn.set_update_duration(std::chrono::minutes(1));
   dmn.set_cwd("/");
   dmn.run(argc, argv);
-
-
-
   return 0;
 }

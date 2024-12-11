@@ -49,14 +49,17 @@ private:
     std::string RecieveStreamCore(bool reciever);
 
 public:
+    int err = 0;
 
     SharedMemory(const char *memname) : memname(memname) {
-        Init();
+        err = Init();
     }
     
     ~SharedMemory() {
         Close();
     }
+
+    const char *GetMemname() { return memname; }
 
     bool GetState() { return shmp->state; }
 

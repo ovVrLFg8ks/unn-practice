@@ -19,7 +19,7 @@ public:
         while (working) {
             if (AwaitLoop() == -1) {
                 dlog::info("NO ANS");
-                usleep(10000*1000);
+                usleep(1000*1000);
                 continue;
             }
             shm.SetTag(comms[command].first);
@@ -37,15 +37,15 @@ void ClientLoop(SharedMemoryClient_A &client) {
 void RunClient(Transport& transport_soket) {
     transport_soket.Run();
 }
-class fault : public daemon
-{
+
+class fault : public daemon {
 public:
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RF);
-    std::thread loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
+    std::thread loop_radioSM;
 
 
     Transport Transp = Transport();
-    std::thread client_thread = std::thread (RunClient, std::ref(Transp));
+    std::thread client_thread;
     
 
     void on_start(const dconfig& cfg) override {
@@ -53,7 +53,11 @@ public:
       /// Initialize your code here...
 
       dlog::info("on_start: fault version " + cfg.get("version") + " started!");
+
+      client_thread = std::thread(RunClient, std::ref(Transp));
       Transp.Run();
+      
+      loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
     }
 
     void on_update() override {
@@ -70,6 +74,8 @@ public:
       radioSM.Stop();
       Transp.Stop_Socket();
       loop_radioSM.join();
+      
+      Transp.Stop_Socket();
       client_thread.join();
       dlog::info("on_stop: fault stopped.");
     }
@@ -85,7 +91,7 @@ public:
 
 int main(int argc, const char* argv[]) {
   fault dmn;
-  dmn.set_name("configuration");
+  dmn.set_name("fault");
   dmn.set_update_duration(std::chrono::minutes(1));
   dmn.set_cwd("/");
   dmn.run(argc, argv);
