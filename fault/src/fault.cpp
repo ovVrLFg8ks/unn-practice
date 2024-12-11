@@ -77,11 +77,9 @@ public:
       /// Cleanup your code here...
 
       radioSM.Stop();
-      socketTransport.Stop_Socket();
       PipeTransport.Stop();
-
       loop_radioSM.join();
-      SocketThread.join();
+      client_thread.join();
       namedPipeThread.join();
       
       dlog::info("on_stop: fault stopped.");
