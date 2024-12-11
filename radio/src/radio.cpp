@@ -54,6 +54,7 @@ public:
       dlog::info("on_stop: radio stopped.");
       server_RC.Stop();
       server_RF.Stop();
+      Transp.Stop_Socket();
       serveloop_RC.join();
       serveloop_RF.join();
       client_thread.join();

@@ -73,9 +73,8 @@ public:
     void on_stop() override {
       /// Runs once before daemon is about to exit.
       /// Cleanup your code here...
-
+      configServer.Stop_Socket();
       radioSM.Stop();
-      loop_radioSM.join();
       server_thread.join();
       clientAppThread.join();
 

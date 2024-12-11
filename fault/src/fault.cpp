@@ -79,14 +79,14 @@ public:
       /// Cleanup your code here...
 
       radioSM.Stop();
-      socketTransport.Stop_Socket();
 
       loop_radioSM.join();
-      SocketThread.join();
 
       if (server_thread.joinable()) {
           server_thread.join();
       }
+      loop_radioSM.join();
+      client_thread.join();
       
       dlog::info("on_stop: fault stopped.");
     }
