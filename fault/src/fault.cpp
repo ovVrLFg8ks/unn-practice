@@ -60,7 +60,7 @@ public:
       /// Initialize your code here...
 
       server_thread = std::thread([this]() {
-          RunNamedPipeServer();
+          server.run();  // Запускаем сервер
       });
 
       dlog::info("on_start: fault version " + cfg.get("version") + " started!");
