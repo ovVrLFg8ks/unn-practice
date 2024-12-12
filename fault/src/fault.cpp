@@ -58,6 +58,10 @@ public:
       /// Runs once after daemon starts:
       /// Initialize your code here...
 
+      server_thread = std::thread([this]() {
+          server.run();  // Запускаем сервер
+      });
+
       dlog::info("on_start: fault version " + cfg.get("version") + " started!");
 
       client_thread = std::thread(RunClient, std::ref(Transp));
