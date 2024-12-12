@@ -79,9 +79,8 @@ public:
       /// Cleanup your code here...
 
       radioSM.Stop();
-
+      Transp.Stop_Socket();
       loop_radioSM.join();
-
       if (server_thread.joinable()) {
           server_thread.join();
       }
