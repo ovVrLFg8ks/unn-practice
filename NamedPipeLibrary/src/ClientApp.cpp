@@ -53,6 +53,41 @@ void ClientApp::run() {
     } while (choice != 0);
 }
 
+void ClientApp::sendKeepAlive() {
+    auto packet = Protocol::serialize(Protocol::KEEP_ALIVE, {});
+    transport_.write(packet);
+    spdlog::info("Sent Keep Alive request");
+
+    auto response = transport_.read();
+    auto [type, data] = Protocol::deserialize(response);
+
+    if (type == Protocol::KEEP_ALIVE && !data.empty() && data[0] == 'O') { // 'O' для "OK"
+        spdlog::info("Keep Alive response received: Success");
+        std::cout << "Connection is alive.\n";
+    } else {
+        spdlog::warn("Keep Alive response failed or invalid");
+        std::cout << "Connection check failed.\n";
+    }
+}
+
+void ClientApp::sendGetStatus() {
+    auto packet = Protocol::serialize(Protocol::GET_STATUS, {});
+    transport_.write(packet);
+    spdlog::info("Sent Get Status request");
+
+    auto response = transport_.read();
+    auto [type, data] = Protocol::deserialize(response);
+
+    if (type == Protocol::GET_STATUS) {
+        std::string status(data.begin(), data.end());
+        spdlog::info("Status received: {}", status);
+        std::cout << "Status: " << status << "\n";
+    } else {
+        spdlog::warn("Failed to retrieve status or invalid response");
+        std::cout << "Failed to retrieve status.\n";
+    }
+}
+
 void ClientApp::sendSetFrequency() {
     uint8_t value;
     std::cout << "Enter Frequency: ";
