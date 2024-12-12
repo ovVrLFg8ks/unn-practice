@@ -1,34 +1,22 @@
-cmake_minimum_required(VERSION 3.15)
-project(NamedPipeLibrary)
+project(NamedPipeLibrary VERSION 1.0.0 LANGUAGES CXX)
+include(GNUInstallDirs)
 
-# Установка стандарта C++
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(PIPE_LIB_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(PIPE_LIB_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-# Добавляем spdlog как зависимость
 find_package(spdlog REQUIRED)
 
-# Добавление библиотеки
-add_library(NamedPipeLibrary
-    src/ClientApp.cpp
-    src/NamedPipeTransport.cpp
-    src/Protocol.cpp
-    src/ServerApp.cpp
-)
+file(GLOB PIPE_LIB_HEADERS ${PIPE_LIB_INCLUDE_DIR}/*.hpp)
+file(GLOB PIPE_LIB_SOURCE ${PIPE_LIB_SOURCE_DIR}/*.cpp)
 
-# Указываем заголовочные файлы
-target_include_directories(NamedPipeLibrary PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
+add_library(${PROJECT_NAME} SHARED ${PIPE_LIB_SOURCE} ${PIPE_LIB_HEADERS})
 
-# Линкуем spdlog
-target_link_libraries(NamedPipeLibrary PRIVATE spdlog::spdlog)
+target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
+target_compile_options(${PROJECT_NAME} PRIVATE "-Wall")
 
-# Устанавливаем пути для установки библиотеки
-install(TARGETS NamedPipeLibrary
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-)
+target_include_directories(${PROJECT_NAME} PUBLIC ${PIPE_LIB_INCLUDE_DIR})
+target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
 
-install(DIRECTORY include/ DESTINATION include)
+set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
+
+install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})

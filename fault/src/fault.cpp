@@ -38,7 +38,6 @@ void ClientLoop(SharedMemoryClient_A &client) {
 void RunClient(Transport& transport_soket) {
     transport_soket.Run();
 }
-
 void RunNamedPipeServer(ServerApp &server) {
     server.run();
 }
@@ -59,20 +58,14 @@ public:
       /// Runs once after daemon starts:
       /// Initialize your code here...
 
-      server_thread = std::thread([this]() {
-          RunNamedPipeServer();
-      });
-
       dlog::info("on_start: fault version " + cfg.get("version") + " started!");
 
       client_thread = std::thread(RunClient, std::ref(Transp));
       Transp.Run();
       
-      namedPipeThread = std::thread(RunNamedPipeServer, std::ref(pipeTransport));
+      server_thread = std::thread(RunNamedPipeServer, std::ref(server));
 
       loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
-
-      pipeTransport.Initialize("/tmp/named_pipe_transport");
     }
 
     void on_update() override {

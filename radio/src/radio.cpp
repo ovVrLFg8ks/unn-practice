@@ -45,8 +45,8 @@ void RunClient(Transport& transport_soket) {
 void RunClientApp(ClientApp& client_app) {
     client_app.run();
 }
-class radio : public daemon
-{
+
+class radio : public daemon {
 public:
     SharedMemoryServer_A server_RC = SharedMemoryServer_A(MEMNAME_RC);
     SharedMemoryServer_A server_RF = SharedMemoryServer_A(MEMNAME_RF);
@@ -60,7 +60,7 @@ public:
     
 
     ClientApp clientApp = ClientApp("/tmp/fifo_request", "/tmp/fifo_response");
-    std::thread clientAppThread = std::thread(RunClientApp, std::ref(clientApp));
+    std::thread clientAppThread;
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
@@ -71,7 +71,7 @@ public:
       clientApp.run();
       Transp.Run();
       
-      namedPipeThread = std::thread(RunNamedPipeClient, std::ref(pipeTransport));
+      clientAppThread = std::thread(RunClientApp, std::ref(clientApp));
 
       serveloop_RC = std::thread(ServLoop, std::ref(server_RC));
       serveloop_RF = std::thread(ServLoop, std::ref(server_RF));

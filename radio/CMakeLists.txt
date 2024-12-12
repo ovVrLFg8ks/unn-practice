@@ -20,6 +20,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE "-Wall")
 target_link_libraries(${PROJECT_NAME} PRIVATE daemon)
 target_link_libraries(${PROJECT_NAME} PRIVATE transport.shrmem)
 target_link_libraries(${PROJECT_NAME} PRIVATE transport.socket)
+target_link_libraries(${PROJECT_NAME} PRIVATE NamedPipeLibrary)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
 

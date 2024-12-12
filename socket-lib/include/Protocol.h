@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <iostream>
 
-class Protocol {
+class ProtocolSocket {
 public:
     enum Command {
         ALIVE = 1,               // Check if the server is alive
