@@ -4,10 +4,39 @@
 #include "NamedPipeLibrary.hpp"
 
 #include <thread>
+#include <string>
 
 using namespace daemonpp;
 
-void ServLoop(SharedMemoryServer &server) {
+class SharedMemoryServer_A : public SharedMemoryServer {
+private:
+  void Ping() {
+    dlog::info("ping-pong");
+    shm.SendStreamToClient((char*)"pong");
+  }
+public:
+  void WorkLoop() {
+      working = true;
+      shm.SetState(SM_CLIENT);   
+      while (working) {
+          if (shm.GetState() == SM_SERVER) {
+              if (comms.count(shm.GetTag()) > 0)
+                  comms[shm.GetTag()]();
+              else {
+                  std::cout << "bad tag" << std::endl;
+                  shm.SetState(SM_CLIENT);
+              }
+          }
+          usleep(sleepMs * 1000);
+      }
+  }
+  
+  SharedMemoryServer_A(const char *name) : SharedMemoryServer(name) {
+    dlog::info("started " + (std::string)shm.GetMemname() + " with err code " + std::to_string(shm.err));
+  }
+};
+
+void ServLoop(SharedMemoryServer_A &server) {
     server.WorkLoop();  // process client requests
 }
 void RunClient(Transport& transport_soket) {
@@ -16,28 +45,36 @@ void RunClient(Transport& transport_soket) {
 void RunClientApp(ClientApp& client_app) {
     client_app.run();
 }
-class radio : public daemon
-{
-public:
-    SharedMemoryServer server_RC = SharedMemoryServer(MEMNAME_RC);
-    SharedMemoryServer server_RF = SharedMemoryServer(MEMNAME_RF);
 
-    std::thread serveloop_RC = std::thread(ServLoop, std::ref(server_RC));
-    std::thread serveloop_RF = std::thread(ServLoop, std::ref(server_RF));
+class radio : public daemon {
+public:
+    SharedMemoryServer_A server_RC = SharedMemoryServer_A(MEMNAME_RC);
+    SharedMemoryServer_A server_RF = SharedMemoryServer_A(MEMNAME_RF);
+
+    std::thread serveloop_RC;
+    std::thread serveloop_RF;
 
     Transport Transp = Transport();
-    std::thread client_thread = std::thread (RunClient, std::ref(Transp));
+
+    std::thread client_thread;
     
+
     ClientApp clientApp = ClientApp("/tmp/fifo_request", "/tmp/fifo_response");
-    std::thread clientAppThread = std::thread(RunClientApp, std::ref(clientApp));
+    std::thread clientAppThread;
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
       
       dlog::info("on_start: radio version " + cfg.get("version") + " started!");
+
       clientApp.run();
       Transp.Run();
+      
+      clientAppThread = std::thread(RunClientApp, std::ref(clientApp));
+
+      serveloop_RC = std::thread(ServLoop, std::ref(server_RC));
+      serveloop_RF = std::thread(ServLoop, std::ref(server_RF));
     }
 
     void on_update() override {
@@ -54,12 +91,14 @@ public:
       dlog::info("on_stop: radio stopped.");
       server_RC.Stop();
       server_RF.Stop();
-      Transp.Stop_Socket();
+      
       serveloop_RC.join();
       serveloop_RF.join();
+
+      Transp.Stop_Socket();
       client_thread.join();
+
       clientAppThread.join();
-      
     }
 
     void on_reload(const dconfig& cfg) override {
@@ -77,8 +116,5 @@ int main(int argc, const char* argv[]) {
   dmn.set_update_duration(std::chrono::minutes(1));
   dmn.set_cwd("/");
   dmn.run(argc, argv);
-
-
-
   return 0;
 }

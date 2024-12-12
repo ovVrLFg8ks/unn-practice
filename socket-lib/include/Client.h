@@ -1,8 +1,13 @@
 #pragma once
 #include "Socket.h"
 #include "Protocol.h"
+#include "dlog.hpp"
 #include <vector>
 #include <string>
+
+
+using namespace daemonpp;
+
 
 class Client {
 public:
@@ -10,11 +15,10 @@ public:
         socket.Connect(address);
     }
 
-    
-    void SendRequest(Protocol::Command cmd, const std::vector<uint8_t>& data = {}) {
+    void SendRequest(ProtocolSocket::Command cmd, const std::vector<uint8_t>& data = {}) {
         // Create a message containing the command and the data to be sent
-        Protocol::Message msg{cmd, data};               
-        auto serialized = Protocol::Serialize(msg);    
+        ProtocolSocket::Message msg{cmd, data};               
+        auto serialized = ProtocolSocket::Serialize(msg);    
 
         // Send the serialized message as a string over the socket 
         socket.Send(std::string(serialized.begin(), serialized.end()));  
@@ -28,7 +32,7 @@ public:
         std::vector<uint8_t> buffer(response.begin(), response.end());
         
         try {
-            Protocol::Message msg = Protocol::Deserialize(buffer);
+            ProtocolSocket::Message msg = ProtocolSocket::Deserialize(buffer);
             // Convert the message data into a string 
             std::string responseStr(msg.data.begin(), msg.data.end());
             return responseStr;
@@ -55,20 +59,20 @@ public:
     }
 
     // Handle user input and prepare the corresponding protocol message for the server.
-    Protocol::Message HandleCommand(int command) {
-        Protocol::Message request;
+    ProtocolSocket::Message HandleCommand(int command) {
+        ProtocolSocket::Message request;
         switch (command) {
             case 1: 
-                request.command = Protocol::ALIVE;
+                request.command = ProtocolSocket::ALIVE;
                 break;
             case 2: 
-                request.command = Protocol::STATUS;
+                request.command = ProtocolSocket::STATUS;
                 break;
             case 3: { 
                 dlog::info ("Enter frequency: ");
                 std::cin >> frequency;
 
-                request.command = Protocol::SET_FREQUENCY;
+                request.command = ProtocolSocket::SET_FREQUENCY;
                 request.data.resize(sizeof(float));  
                 std::memcpy(request.data.data(), &frequency, sizeof(float));  // Copy the frequency value into the request data
                 break;
@@ -77,22 +81,22 @@ public:
                 dlog::info ("Enter power: ");
                 std::cin >> power;
 
-                request.command = Protocol::SET_POWER;
+                request.command = ProtocolSocket::SET_POWER;
                 request.data.resize(sizeof(float));
                 std::memcpy(request.data.data(), &power, sizeof(float)); // Copy the power value into the request data
                 break;
             }
             case 5: 
-                request.command = Protocol::GET_FREQUENCY;
+                request.command = ProtocolSocket::GET_FREQUENCY;
                 break;
             case 6: 
-                request.command = Protocol::GET_POWER;
+                request.command = ProtocolSocket::GET_POWER;
                 break;
             case 7: { 
                 int emergency;
                 dlog::info ("Enter emergency number: ");
                 std::cin >> emergency;
-                request.command = Protocol::RAISE_EMERGENCY;
+                request.command = ProtocolSocket::RAISE_EMERGENCY;
                 request.data.resize(sizeof(int));
                 std::memcpy(request.data.data(), &emergency, sizeof(int)); // Copy the emergency number into the request data
                 break;
@@ -101,13 +105,13 @@ public:
                 int emergency;
                 dlog::info ("Enter emergency number to clear: ");
                 std::cin >> emergency;
-                request.command = Protocol::CLEAR_EMERGENCY;
+                request.command = ProtocolSocket::CLEAR_EMERGENCY;
                 request.data.resize(sizeof(int));
                 std::memcpy(request.data.data(), &emergency, sizeof(int)); // Copy the emergency number to clear into the request data
                 break;
             }
             case 9: 
-                request.command = Protocol::GET_EMERGENCIES;
+                request.command = ProtocolSocket::GET_EMERGENCIES;
                 break;
             default:
                 dlog::info ("Invalid command! \n" );

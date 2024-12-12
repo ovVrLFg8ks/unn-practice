@@ -19,13 +19,13 @@ public:
             if (command == 0) {
                 dlog::info("Exit...");
                 // Send EXIT command to the server
-                Protocol::Message exit_msg;
-                exit_msg.command = Protocol::EXIT;  
+                ProtocolSocket::Message exit_msg;
+                exit_msg.command = ProtocolSocket::EXIT;  
                 client.SendRequest(exit_msg.command, exit_msg.data);
                 break;  
             }
             // Prepare the message based on user input
-            Protocol::Message request = client.HandleCommand(command);
+            ProtocolSocket::Message request = client.HandleCommand(command);
 
             try {
                 client.SendRequest(request.command, request.data);      // Send the prepared request to the server

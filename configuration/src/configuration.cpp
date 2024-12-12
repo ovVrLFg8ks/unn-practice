@@ -20,7 +20,7 @@ public:
         while (working) {
             if (AwaitLoop() == -1) {
                 dlog::info("NO ANS");
-                usleep(10000*1000);
+                usleep(1000*1000);
                 continue;
             }
             shm.SetTag(comms[command].first);
@@ -41,15 +41,15 @@ void HandleClientConnection(Server &server_soket) {
 void RunClientApp(ClientApp &client_app) {
     client_app.run();
 }
-class configuration : public daemon
-{
+
+class configuration : public daemon {
 public:
     Address configSocketAddr = Address(DEFAULT_PORT, DEFAULT_HOST);
     Server configServer = Server(configSocketAddr);
-    std::thread server_thread = std::thread(HandleClientConnection, std::ref(configServer));
+    std::thread server_thread;
 
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RC);
-    std::thread loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
+    std::thread loop_radioSM;
 
     ClientApp clientApp = ClientApp("/tmp/fifo_request", "/tmp/fifo_response");
     std::thread clientAppThread = std::thread(RunClientApp, std::ref(clientApp));
@@ -59,7 +59,10 @@ public:
       /// Initialize your code here...
       
       dlog::info("on_start: configuration version " + cfg.get("version") + " started!");
+
+      server_thread = std::thread(HandleClientConnection, std::ref(configServer));
       configServer.Run();
+      
       clientApp.run();
     }
 
@@ -73,9 +76,13 @@ public:
     void on_stop() override {
       /// Runs once before daemon is about to exit.
       /// Cleanup your code here...
-      configServer.Stop_Socket();
+      
       radioSM.Stop();
+      loop_radioSM.join();
+      
+      configServer.Stop_Socket();
       server_thread.join();
+      
       clientAppThread.join();
 
       dlog::info("on_stop: configuration stopped.");

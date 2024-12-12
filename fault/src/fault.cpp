@@ -20,7 +20,7 @@ public:
         while (working) {
             if (AwaitLoop() == -1) {
                 dlog::info("NO ANS");
-                usleep(10000*1000);
+                usleep(1000*1000);
                 continue;
             }
             shm.SetTag(comms[command].first);
@@ -41,16 +41,15 @@ void RunClient(Transport& transport_soket) {
 void RunNamedPipeServer(ServerApp &server) {
     server.run();
 }
-class fault : public daemon
-{
+
+class fault : public daemon {
+
 public:
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RF);
-    std::thread loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
-
+    std::thread loop_radioSM;
 
     Transport Transp = Transport();
-    std::thread client_thread = std::thread (RunClient, std::ref(Transp));
-    
+    std::thread client_thread;
     
     ServerApp server = ServerApp("/tmp/fifo_request", "/tmp/fifo_response");
     std::thread server_thread;
@@ -64,7 +63,13 @@ public:
       });
 
       dlog::info("on_start: fault version " + cfg.get("version") + " started!");
+
+      client_thread = std::thread(RunClient, std::ref(Transp));
       Transp.Run();
+      
+      server_thread = std::thread(RunNamedPipeServer, std::ref(server));
+
+      loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
     }
 
     void on_update() override {
@@ -80,6 +85,7 @@ public:
 
       radioSM.Stop();
       Transp.Stop_Socket();
+
       loop_radioSM.join();
       if (server_thread.joinable()) {
           server_thread.join();
@@ -101,7 +107,7 @@ public:
 
 int main(int argc, const char* argv[]) {
   fault dmn;
-  dmn.set_name("configuration");
+  dmn.set_name("fault");
   dmn.set_update_duration(std::chrono::minutes(1));
   dmn.set_cwd("/");
   dmn.run(argc, argv);

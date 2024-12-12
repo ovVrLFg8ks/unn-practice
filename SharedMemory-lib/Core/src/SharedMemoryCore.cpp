@@ -14,12 +14,12 @@ int SharedMemory::Init() {
             return -1;
     }
     if (fd == -1)
-        return -1;
+        return -2;
 
     // new mapping in the VAS
     shmp = (shrData *)mmap(NULL, sizeof(shrData), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (shmp == MAP_FAILED)
-        return -1;
+        return -3;
 
     if (!exist)
         shmp->state = SM_SERVER;
@@ -70,7 +70,7 @@ std::string SharedMemory::RecieveStreamCore(bool reciever) {
         while (shmp->state != reciever) {
             usleep(sleepDurationMs * 1000);
             if (i++ > awaitIter) {
-                shmp->state = reciever;
+                //shmp->state = reciever;
                 str = "NO ANSWER";
                 return str;
             }
