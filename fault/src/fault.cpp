@@ -47,23 +47,23 @@ class fault : public daemon {
 public:
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RF);
     std::thread loop_radioSM;
-
+/*
     Transport Transp = Transport();
     std::thread client_thread;
     
     ServerApp server = ServerApp("/tmp/fifo_request", "/tmp/fifo_response");
-    std::thread server_thread;
+    std::thread server_thread;*/
 
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
 
       dlog::info("on_start: fault version " + cfg.get("version") + " started!");
-
+/*
       client_thread = std::thread(RunClient, std::ref(Transp));
       Transp.Run();
       
-      server_thread = std::thread(RunNamedPipeServer, std::ref(server));
+      server_thread = std::thread(RunNamedPipeServer, std::ref(server));*/
 
       loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
     }
@@ -79,15 +79,15 @@ public:
       /// Runs once before daemon is about to exit.
       /// Cleanup your code here...
 
-      radioSM.Stop();
-      Transp.Stop_Socket();
-
+      radioSM.Stop();   // shared mem
       loop_radioSM.join();
-      if (server_thread.joinable()) {
-          server_thread.join();
-      }
-      loop_radioSM.join();
+      /*
+      Transp.Stop_Socket(); // socks
       client_thread.join();
+
+      if (server_thread.joinable()) { // pipe
+          server_thread.join();
+      }*/
       
       dlog::info("on_stop: fault stopped.");
     }

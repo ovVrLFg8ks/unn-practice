@@ -43,27 +43,29 @@ void RunClientApp(ClientApp &client_app) {
 }
 
 class configuration : public daemon {
-public:
+public:/*
     Address configSocketAddr = Address(DEFAULT_PORT, DEFAULT_HOST);
     Server configServer = Server(configSocketAddr);
-    std::thread server_thread;
+    std::thread server_thread;*/
 
     SharedMemoryClient_A radioSM = SharedMemoryClient_A(MEMNAME_RC);
     std::thread loop_radioSM;
-
+/*
     ClientApp clientApp = ClientApp("/tmp/fifo_request", "/tmp/fifo_response");
     std::thread clientAppThread = std::thread(RunClientApp, std::ref(clientApp));
-
+*/
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
       
       dlog::info("on_start: configuration version " + cfg.get("version") + " started!");
-
+      
+/*
       server_thread = std::thread(HandleClientConnection, std::ref(configServer));
       configServer.Run();
       
-      clientApp.run();
+      clientApp.run();*/
+      loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
     }
 
     void on_update() override {
@@ -79,11 +81,11 @@ public:
       
       radioSM.Stop();
       loop_radioSM.join();
-      
+      /*
       configServer.Stop_Socket();
       server_thread.join();
       
-      clientAppThread.join();
+      clientAppThread.join();*/
 
       dlog::info("on_stop: configuration stopped.");
     }

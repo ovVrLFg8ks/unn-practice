@@ -9,7 +9,10 @@
 #include <string>
 #include <errno.h>
 #include <cstring>
+#include <filesystem>
 #include <algorithm>
+
+#include <system_error>
 
 
 #include "Protocol.hpp"
@@ -21,6 +24,7 @@ private:
     static constexpr bool SM_CLIENT = 1;
 
     const char *memname;                    // shared memory unique name
+    std::string mempath;
     constexpr static size_t bufsize = 16;   // minimum 4 to fit int32 
     u_int16_t sleepDurationMs = 100;        // sleep in loops
     int awaitIter = 10;                     // loops max number of iteratoins (in case of server not answering)
@@ -40,6 +44,10 @@ private:
 
     int Close();    // close shared memory
 
+    void CloseBroken();   // delete broken shm of size 0
+
+    bool CheckBroken();
+
     void int32ToChar(char a[], int32_t n); // place int32 to shrData.data[]
 
     int32_t charToInt32(char a[]);         // extract int32 from shrData.data[]
@@ -50,8 +58,13 @@ private:
 
 public:
     int err = 0;
+    std::error_code ec;
+
 
     SharedMemory(const char *memname) : memname(memname) {
+        mempath = "/dev/shm";
+        mempath += memname;
+        CloseBroken();
         err = Init();
     }
     

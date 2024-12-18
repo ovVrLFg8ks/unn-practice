@@ -32,7 +32,8 @@ public:
   }
   
   SharedMemoryServer_A(const char *name) : SharedMemoryServer(name) {
-    dlog::info("started " + (std::string)shm.GetMemname() + " with err code " + std::to_string(shm.err));
+    dlog::info("started " + (std::string)shm.GetMemname() + " with err code " + std::to_string(shm.err) + " & "+ shm.ec.message());
+    //dlog::info("started " + (std::string)shm.GetMemname() + " with err code " + shm.ec.message() + " " + shm.ec.category().name() + " " + shm.ec.default_error_condition().message());
   }
 };
 
@@ -53,7 +54,7 @@ public:
 
     std::thread serveloop_RC;
     std::thread serveloop_RF;
-
+/*
     Transport Transp = Transport();
 
     std::thread client_thread;
@@ -61,18 +62,18 @@ public:
 
     ClientApp clientApp = ClientApp("/tmp/fifo_request", "/tmp/fifo_response");
     std::thread clientAppThread;
-
+*/
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
       
       dlog::info("on_start: radio version " + cfg.get("version") + " started!");
-
+/*
       clientApp.run();
       Transp.Run();
       
       clientAppThread = std::thread(RunClientApp, std::ref(clientApp));
-
+*/
       serveloop_RC = std::thread(ServLoop, std::ref(server_RC));
       serveloop_RF = std::thread(ServLoop, std::ref(server_RF));
     }
@@ -94,11 +95,11 @@ public:
       
       serveloop_RC.join();
       serveloop_RF.join();
-
+/*
       Transp.Stop_Socket();
       client_thread.join();
 
-      clientAppThread.join();
+      clientAppThread.join();*/
     }
 
     void on_reload(const dconfig& cfg) override {
