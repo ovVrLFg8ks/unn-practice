@@ -12,8 +12,8 @@
 class SharedMemoryServer {
 protected:
     std::string status = "OK!";     // server/equipment status
-    int32_t frequency = 1000;       // equipment freq
-    int32_t minFrequency = 1000;    // 1000 for example 
+    int32_t frequency = 0;       // equipment freq
+    int32_t minFrequency = 0;    // 1000 for example 
     int32_t power = 0;              // equipment power
 
     bool working = true;            // WorkLoop() state

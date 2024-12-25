@@ -5,6 +5,7 @@
 
 #include <thread>
 #include <string>
+#include <fstream>
 
 using namespace daemonpp;
 
@@ -14,10 +15,63 @@ private:
     dlog::info("ping-pong");
     shm.SendStreamToClient((char*)"pong");
   }
+
+  void SetFrequency() {
+    if (shm.GetNumber() > 0) {
+        frequency = shm.GetNumber();
+        dlog::info("frequency set: " + std::to_string(frequency));
+        shm.SendStreamToClient((char*)"ok");
+    }
+    else if (shm.GetNumber() == 0) {
+        frequency = shm.GetNumber();
+        dlog::info("update stop, frequency set to " + std::to_string(frequency));
+        shm.SendStreamToClient((char*)"ok");
+    }
+    else {
+        shm.SendStreamToClient((char*)"not ok");
+        dlog::info("frequency not set");
+    }
+  }
+
+  
 public:
+  int WhatFrequency() { return frequency;}
+
+  void FileLoop() {
+    std::string filepath = "/tmp/FILE.txt";
+    std::string filetext;
+    frequency = 1;
+
+    while (working) { 
+      if (frequency == 0) {
+        usleep(1 * 1000 * 1000);
+        continue;
+      }
+      std::ifstream fstr(filepath);
+        if (fstr.good()) {
+          getline(fstr, filetext);
+          try {
+            power = stoi(filetext);
+            dlog::info("read " + std::to_string(power));
+          }
+          catch (std::string error_message) {
+            dlog::info("BAD FILE " + error_message);
+          }
+        }
+        else {
+          dlog::info("file not found. creating...");
+          std::ofstream o(filepath);
+          o << power;
+        }
+        fstr.close();
+        usleep(frequency * 1000 * 1000);
+    }
+  }
+
   void WorkLoop() {
       working = true;
-      shm.SetState(SM_CLIENT);   
+      shm.SetState(SM_CLIENT);
+
       while (working) {
           if (shm.GetState() == SM_SERVER) {
               if (comms.count(shm.GetTag()) > 0)
@@ -32,12 +86,15 @@ public:
   }
   
   SharedMemoryServer_A(const char *name) : SharedMemoryServer(name) {
-    dlog::info("started " + (std::string)shm.GetMemname() + " with err code " + std::to_string(shm.err));
+    dlog::info("started " + (std::string)shm.GetMemname() + " with err code " + std::to_string(shm.err) + " & "+ shm.ec.message());
   }
 };
 
 void ServLoop(SharedMemoryServer_A &server) {
     server.WorkLoop();  // process client requests
+}
+void FileLoop(SharedMemoryServer_A &server) {
+    server.FileLoop();  // process file
 }
 void RunClient(Transport& transport_soket) {
     transport_soket.Run();
@@ -49,11 +106,12 @@ void RunClientApp(ClientApp& client_app) {
 class radio : public daemon {
 public:
     SharedMemoryServer_A server_RC = SharedMemoryServer_A(MEMNAME_RC);
-    SharedMemoryServer_A server_RF = SharedMemoryServer_A(MEMNAME_RF);
+    //SharedMemoryServer_A server_RF = SharedMemoryServer_A(MEMNAME_RF);
 
     std::thread serveloop_RC;
-    std::thread serveloop_RF;
-
+    std::thread fileThread;
+    //std::thread serveloop_RF;
+/*
     Transport Transp = Transport();
 
     std::thread client_thread;
@@ -61,20 +119,21 @@ public:
 
     ClientApp clientApp = ClientApp("/tmp/fifo_request", "/tmp/fifo_response");
     std::thread clientAppThread;
-
+*/
     void on_start(const dconfig& cfg) override {
       /// Runs once after daemon starts:
       /// Initialize your code here...
       
       dlog::info("on_start: radio version " + cfg.get("version") + " started!");
-
+/*
       clientApp.run();
       Transp.Run();
       
       clientAppThread = std::thread(RunClientApp, std::ref(clientApp));
-
+*/
       serveloop_RC = std::thread(ServLoop, std::ref(server_RC));
-      serveloop_RF = std::thread(ServLoop, std::ref(server_RF));
+      fileThread = std::thread(FileLoop, std::ref(server_RC));
+      //serveloop_RF = std::thread(ServLoop, std::ref(server_RF));
     }
 
     void on_update() override {
@@ -90,15 +149,16 @@ public:
 
       dlog::info("on_stop: radio stopped.");
       server_RC.Stop();
-      server_RF.Stop();
+      //server_RF.Stop();
       
       serveloop_RC.join();
-      serveloop_RF.join();
-
+      fileThread.join();
+      //serveloop_RF.join();
+/*
       Transp.Stop_Socket();
       client_thread.join();
 
-      clientAppThread.join();
+      clientAppThread.join();*/
     }
 
     void on_reload(const dconfig& cfg) override {

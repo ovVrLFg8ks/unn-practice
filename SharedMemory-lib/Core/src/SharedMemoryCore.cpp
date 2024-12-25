@@ -26,6 +26,25 @@ int SharedMemory::Init() {
     return 0;
 }
 
+bool SharedMemory::CheckBroken() {
+    if (std::filesystem::exists(mempath)) {
+        struct stat st;
+        stat(mempath.c_str(), &st);
+        if (st.st_size == 0)
+            return true;
+
+    }
+    return false;
+}
+
+void SharedMemory::CloseBroken() {
+    if (CheckBroken()) {
+        //err = -12;
+        std::filesystem::remove(mempath, ec);
+        //err = -13;
+    }
+}
+
 int SharedMemory::Close() {
     if (munmap(shmp, sizeof(shrData)) == -1)
         return -1;
