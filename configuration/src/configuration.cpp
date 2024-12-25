@@ -13,10 +13,17 @@ private:
       shm.SetState(SM_SERVER);
       dlog::info(shm.RecieveStreamFromServer());
   }
+
+  std::string SetFreq(int32_t val) {
+    shm.SetNumber(val);
+    shm.SetState(SM_SERVER);
+    return shm.RecieveStreamFromServer();
+  }
+
 public:
     void WorkLoop() {
         working = true;
-        std::string command = "ping";    // user command (ex. "ping")
+        std::string command = "setfreq";    // user command (ex. "ping")
         while (working) {
             if (AwaitLoop() == -1) {
                 dlog::info("NO ANS");
@@ -29,11 +36,25 @@ public:
         }
     }
 
+    bool SetFr(int32_t freq) {
+      if (AwaitLoop() == -1) {
+        dlog::info("NO ANS");
+        return false;
+      }
+      if (SetFreq(freq)[0] == 'o')  // "ok", ok?
+        return true;
+      else
+        return false;
+    }
+
     SharedMemoryClient_A(const char *name) : SharedMemoryClient(name) {}
 };
 
-void ClientLoop(SharedMemoryClient_A &client) {
+void ClientLoop(SharedMemoryClient_A &client) {               // do not use in this task
     client.WorkLoop();
+}
+void SendFreq(SharedMemoryClient_A &client, int32_t freq) {   // start thread with that if you want to send frequency
+    client.SetFr(freq);
 }
 void HandleClientConnection(Server &server_soket) {
     server_soket.Run();
@@ -65,7 +86,7 @@ public:/*
       configServer.Run();
       
       clientApp.run();*/
-      loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
+      //loop_radioSM = std::thread(ClientLoop, std::ref(radioSM));
     }
 
     void on_update() override {

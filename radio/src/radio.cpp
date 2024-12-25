@@ -32,7 +32,11 @@ private:
         dlog::info("frequency not set");
     }
   }
+
+  
 public:
+  int WhatFrequency() { return frequency;}
+
   void FileLoop() {
     std::string filepath = "/tmp/FILE.txt";
     std::string filetext;
